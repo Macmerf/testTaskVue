@@ -1,45 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <title>Babushka jam</title>
 </head>
 <style lang="css">
-  *{
+  * {
     padding: 10px;
-    margin-top: 10px ;
+    margin-top: 10px;
   }
-  label{
+
+  label {
     padding: 0;
   }
-  .card-holder{
+
+  .card-holder {
     display: flex;
     align-items: start;
     justify-content: start;
     flex-wrap: wrap;
   }
-  form{
+
+  form {
     display: flex;
     flex-direction: column;
     justify-content: start;
   }
 </style>
+
 <body>
   <div id="app">
     <h1>Варим варенье</h1>
     <div class="card-holder">
-      <empty-jar @create-jar = "PushJar"></empty-jar>
-      <fill-jar @fill-jar ="fillJars"></fill-jar>
-      <div>
-        <div v-for="jar in jars">
-          <p v-if="jar.content ==='empty'">В банке номер {{jar.id}}
-            объемом {{jar.volume}}
-            пусто
-          </p>
-          <p v-else>В банке номер {{jar.id}}
-            {{jar.volume}} грамм
-            {{jar.content.replace(/..$/,'ого')}} варенья</p>
-        </div>
-      </div>
+      <empty-jar @create-jar="PushJar"></empty-jar>
+      <fill-jar @fill-jar="fillJars"></fill-jar>
+      <result-jar :result ="jars"></result-jar>
     </div>
   </div>
 
@@ -49,22 +44,22 @@
   const app = Vue.createApp({
     data() {
       return {
-        jars:[],
-        jamPot:0,
+        jars: [],
+        jamPot: 0,
       }
     },
     methods: {
-      PushJar(jar){
+      PushJar(jar) {
         this.jars.push(jar);
         console.log(this.jars)
       },
-      fillJars(jam, jamVolume){
+      fillJars(jam, jamVolume) {
         this.jamPot = jamVolume;
-        this.jars.map((jar)=>{
-           if( jar.content === 'empty' &&  this.jamPot !== 0) {
-              this.jamPot >= jar.volume  ? this.jamPot -= jar.volume : jar.volume = this.jamPot;
-              jar.content = jam;
-            } 
+        this.jars.map((jar) => {
+          if (jar.content === 'empty' && this.jamPot !== 0) {
+            this.jamPot >= jar.volume ? this.jamPot -= jar.volume : jar.volume = this.jamPot;
+            jar.content = jam;
+          }
         });
       }
     },
@@ -72,7 +67,7 @@
 
   //components
   app.component('empty-jar', {
-  template: `
+    template: `
   <form @submit.prevent>
       <label >
         Номер банки
@@ -85,29 +80,29 @@
       <button @click="createEmptyJar">Учесть банку</button>
   </form>
   `,
-  data() {
-    return {
-      jar:{
-        id:'',
-        volume:'',
-        content:'empty'
+    data() {
+      return {
+        jar: {
+          id: '',
+          volume: '',
+          content: 'empty'
+        }
       }
-    }
-  },
-  methods: {
-    createEmptyJar(){
-      this.$emit('create-jar', this.jar);
-      this.jar={
-        id:'',
-        volume:'',
-        content:'empty'
+    },
+    methods: {
+      createEmptyJar() {
+        this.$emit('create-jar', this.jar);
+        this.jar = {
+          id: '',
+          volume: '',
+          content: 'empty'
+        }
       }
-    }
-  },
+    },
   });
 
   app.component('fill-jar', {
-  template: `
+    template: `
   <form @submit.prevent>
       <label>
         Какое варенье?
@@ -125,21 +120,42 @@
       <button @click="cookeJam">Разлить по банкам</button>
   </form>
   `,
-  data() {
-    return {
-      jam:'',
-      jamVolume:'',
-    }
-  },
-  methods: {
-    cookeJam(){
-      this.$emit('fill-jar', this.jam, this.jamVolume);
+    data() {
+      return {
+        jam: '',
+        jamVolume: '',
+      }
+    },
+    methods: {
+      cookeJam() {
+        this.$emit('fill-jar', this.jam, this.jamVolume);
+      }
+    },
+  });
+
+  app.component('result-jar', {
+    template: `
+    <div>
+        <div v-for="jar in result">
+          <p v-if="jar.content ==='empty'">В банке номер {{jar.id}}
+            объемом {{jar.volume}} мм
+            пусто
+          </p>
+          <p v-else>В банке номер {{jar.id}}
+            {{jar.volume}} грамм
+            {{jar.content.replace(/..$/,'ого')}} варенья</p>
+        </div>
+    </div>
+  `,
+  props:{
+    result:{
+      Array,
     }
   },
   });
 
 
-
   app.mount('#app');
 </script>
+
 </html>

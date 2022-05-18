@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Babushka jam</title>
+</head>
+<style lang="css">
+  *{
+    padding: 10px;
+    margin-top: 10px ;
+  }
+  label{
+    padding: 0;
+  }
+  .card-holder{
+    display: flex;
+    align-items: start;
+    justify-content: start;
+    flex-wrap: wrap;
+  }
+  form{
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+  }
+</style>
+<body>
+  <div id="app">
+    <h1>Варим варенье</h1>
+    <div class="card-holder">
+      <empty-jar @create-jar = "PushJar"></empty-jar>
+      <fill-jar @fill-jar ="fillJars"></fill-jar>
+      <div>
+        <div v-for="jar in jars">
+          <p v-if="jar.content ==='empty'">В банке номер {{jar.id}}
+            объемом {{jar.volume}}
+            пусто
+          </p>
+          <p v-else>В банке номер {{jar.id}}
+            {{jar.volume}} грамм
+            {{jar.content.replace(/..$/,'ого')}} варенья</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+<script src="https://unpkg.com/vue@next"></script>
+<script>
+  const app = Vue.createApp({
+    data() {
+      return {
+        jars:[],
+        jamPot:0,
+      }
+    },
+    methods: {
+      PushJar(jar){
+        this.jars.push(jar);
+        console.log(this.jars)
+      },
+      fillJars(jam, jamVolume){
+        this.jamPot = jamVolume;
+        this.jars.map((jar)=>{
+           if( jar.content === 'empty' &&  this.jamPot !== 0) {
+              this.jamPot >= jar.volume  ? this.jamPot -= jar.volume : jar.volume = this.jamPot;
+              jar.content = jam;
+            } 
+        });
+      }
+    },
+  });
+
+  //components
+  app.component('empty-jar', {
+  template: `
+  <form @submit.prevent>
+      <label >
+        Номер банки
+        <input v-model = "jar.id" type="text">
+      </label>
+      <label>
+        Oбъем банки
+        <input v-model = "jar.volume" type="number">
+      </label>
+      <button @click="createEmptyJar">Учесть банку</button>
+  </form>
+  `,
+  data() {
+    return {
+      jar:{
+        id:'',
+        volume:'',
+        content:'empty'
+      }
+    }
+  },
+  methods: {
+    createEmptyJar(){
+      this.$emit('create-jar', this.jar);
+      this.jar={
+        id:'',
+        volume:'',
+        content:'empty'
+      }
+    }
+  },
+  });
+
+  app.component('fill-jar', {
+  template: `
+  <form @submit.prevent>
+      <label>
+        Какое варенье?
+        <select v-model ="jam">
+          <option disabled value="">Выбрать варенье</option>
+          <option >Клубничное</option>
+          <option > Вишневое</option>
+          <option > Абрикосовое</option>
+        </select>
+      </label>
+      <label>
+        Oбъем варенья
+        <input v-model = "jamVolume" type="number">
+      </label>
+      <button @click="cookeJam">Разлить по банкам</button>
+  </form>
+  `,
+  data() {
+    return {
+      jam:'',
+      jamVolume:'',
+    }
+  },
+  methods: {
+    cookeJam(){
+      this.$emit('fill-jar', this.jam, this.jamVolume);
+    }
+  },
+  });
+
+
+
+  app.mount('#app');
+</script>
+</html>
